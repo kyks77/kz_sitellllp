@@ -1,0 +1,585 @@
+﻿<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Басты бет — Oyan Bala</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --blue: #0055A4;
+      --blue-dark: #003d7a;
+      --blue-light: #1a6fc4;
+      --gold: #F5C518;
+      --white: #FAFBFF;
+      --offwhite: #F0F4FF;
+      --text: #0a1628;
+      --text-muted: #4a6080;
+      --border: #dce6f5;
+      --sidebar-w: 260px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Nunito', sans-serif; background: var(--offwhite); color: var(--text); display: flex; min-height: 100vh; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w); flex-shrink: 0;
+      background: linear-gradient(175deg, #003d7a 0%, #0055A4 100%);
+      display: flex; flex-direction: column;
+      padding: 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 50;
+    }
+    .sidebar-logo {
+      padding: 28px 28px 24px;
+      font-family: 'Unbounded', sans-serif;
+      font-size: 1.15rem; font-weight: 900;
+      color: var(--white); text-decoration: none;
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .sidebar-logo span { color: var(--gold); }
+
+    .sidebar-profile {
+      padding: 20px 28px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--gold); display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; flex-shrink: 0;
+      border: 2px solid rgba(255,255,255,0.3);
+    }
+    .profile-info .name { font-weight: 700; color: var(--white); font-size: 0.9rem; }
+    .profile-info .role { font-size: 0.75rem; color: rgba(255,255,255,0.55); margin-top: 2px; }
+
+    .sidebar-nav { flex: 1; padding: 20px 16px; display: flex; flex-direction: column; gap: 4px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; border-radius: 12px;
+      text-decoration: none; color: rgba(255,255,255,0.7);
+      font-weight: 600; font-size: 0.9rem;
+      transition: all 0.2s; cursor: pointer; border: none; background: none; width: 100%; text-align: left;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.1); color: var(--white); }
+    .nav-item.active { background: rgba(245,197,24,0.15); color: var(--gold); }
+    .nav-item.active .nav-icon { filter: none; }
+    .nav-icon { font-size: 1.2rem; width: 24px; text-align: center; }
+    .nav-badge {
+      margin-left: auto; background: var(--gold); color: var(--blue-dark);
+      font-size: 0.7rem; font-weight: 800; border-radius: 50px;
+      padding: 2px 8px;
+    }
+
+    .sidebar-bottom {
+      padding: 16px; border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .logout-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 16px; border-radius: 12px;
+      color: rgba(255,255,255,0.5); font-size: 0.875rem; font-weight: 600;
+      cursor: pointer; border: none; background: none; width: 100%; text-align: left;
+      transition: all 0.2s;
+    }
+    .logout-btn:hover { color: #fc8181; background: rgba(252,129,129,0.1); }
+
+    /* ── MAIN ── */
+    .main {
+      margin-left: var(--sidebar-w); flex: 1;
+      display: flex; flex-direction: column;
+    }
+
+    /* topbar */
+    .topbar {
+      background: var(--white); border-bottom: 1px solid var(--border);
+      padding: 18px 40px; display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 40;
+    }
+    .topbar-left h1 {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 1.2rem; font-weight: 900; color: var(--text);
+    }
+    .topbar-left p { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .notif-btn {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: var(--offwhite); border: none; cursor: pointer;
+      font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
+      position: relative; transition: background 0.2s;
+    }
+    .notif-btn:hover { background: var(--border); }
+    .notif-dot {
+      position: absolute; top: 8px; right: 8px;
+      width: 7px; height: 7px; border-radius: 50%; background: var(--gold);
+    }
+    .city-select {
+      padding: 8px 14px; border-radius: 10px;
+      border: 2px solid var(--border); background: var(--white);
+      font-family: 'Nunito', sans-serif; font-size: 0.875rem; font-weight: 600;
+      color: var(--text); cursor: pointer; outline: none;
+    }
+
+    /* ── CONTENT ── */
+    .content { padding: 36px 40px; flex: 1; }
+
+    /* welcome banner */
+    .welcome-banner {
+      background: linear-gradient(125deg, #003d7a 0%, #0055A4 60%, #1a6fc4 100%);
+      border-radius: 24px; padding: 32px 40px;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 32px; position: relative; overflow: hidden;
+    }
+    .welcome-banner::before {
+      content: ''; position: absolute;
+      right: -40px; top: -40px;
+      width: 220px; height: 220px;
+      border: 50px solid rgba(245,197,24,0.12);
+      border-radius: 50%;
+    }
+    .wb-left h2 {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 1.5rem; font-weight: 900; color: var(--white); margin-bottom: 8px;
+    }
+    .wb-left h2 em { color: var(--gold); font-style: normal; }
+    .wb-left p { color: rgba(255,255,255,0.75); font-size: 0.95rem; }
+    .wb-right { display: flex; gap: 12px; flex-shrink: 0; z-index: 2; }
+    .wb-btn {
+      padding: 12px 24px; border-radius: 12px;
+      font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; text-decoration: none; border: none;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .wb-btn-primary { background: var(--gold); color: var(--blue-dark); }
+    .wb-btn-primary:hover { background: #ffe066; transform: translateY(-1px); }
+    .wb-btn-secondary { background: rgba(255,255,255,0.12); color: var(--white); border: 1px solid rgba(255,255,255,0.2); }
+    .wb-btn-secondary:hover { background: rgba(255,255,255,0.2); }
+
+    /* stats row */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+      margin-bottom: 32px;
+    }
+    .stat-card {
+      background: var(--white); border-radius: 18px;
+      padding: 22px 24px; border: 1px solid var(--border);
+      display: flex; align-items: flex-start; gap: 14px;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .stat-card:hover { box-shadow: 0 6px 20px rgba(0,85,164,0.1); transform: translateY(-2px); }
+    .stat-icon {
+      width: 46px; height: 46px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; flex-shrink: 0;
+    }
+    .stat-icon.blue { background: rgba(0,85,164,0.1); }
+    .stat-icon.gold { background: rgba(245,197,24,0.15); }
+    .stat-icon.green { background: rgba(56,161,105,0.1); }
+    .stat-icon.red { background: rgba(229,62,62,0.1); }
+    .stat-num {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 1.6rem; font-weight: 900; color: var(--text);
+    }
+    .stat-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* grid */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px; }
+
+    .card {
+      background: var(--white); border-radius: 20px;
+      border: 1px solid var(--border); overflow: hidden;
+    }
+    .card-header {
+      padding: 20px 24px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 0.9rem; font-weight: 700;
+    }
+    .card-link {
+      font-size: 0.8rem; color: var(--blue); font-weight: 700;
+      text-decoration: none;
+    }
+    .card-link:hover { text-decoration: underline; }
+    .card-body { padding: 20px 24px; }
+
+    /* kid card */
+    .kid-card {
+      display: flex; gap: 16px; align-items: center;
+      padding: 16px; background: var(--offwhite);
+      border-radius: 14px; margin-bottom: 12px;
+      transition: background 0.2s; cursor: pointer;
+      text-decoration: none; color: var(--text);
+    }
+    .kid-card:hover { background: #e4ecf8; }
+    .kid-avatar {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; flex-shrink: 0;
+    }
+    .kid-avatar.blue { background: rgba(0,85,164,0.12); }
+    .kid-avatar.gold { background: rgba(245,197,24,0.2); }
+    .kid-name { font-weight: 700; font-size: 0.95rem; }
+    .kid-meta { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+    .kid-sections { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+    .kid-section-tag {
+      font-size: 0.75rem; font-weight: 700; padding: 3px 10px;
+      border-radius: 50px; background: rgba(0,85,164,0.1); color: var(--blue);
+    }
+
+    /* section list items */
+    .section-item {
+      display: flex; gap: 14px; align-items: center;
+      padding: 14px 0; border-bottom: 1px solid var(--border);
+      text-decoration: none; color: var(--text);
+      transition: opacity 0.2s;
+    }
+    .section-item:last-child { border-bottom: none; }
+    .section-item:hover { opacity: 0.8; }
+    .section-thumb {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--blue), var(--blue-light));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; flex-shrink: 0;
+    }
+    .section-name { font-weight: 700; font-size: 0.9rem; }
+    .section-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+    .section-rating {
+      margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+    }
+    .rating-stars { color: var(--gold); font-size: 0.8rem; }
+    .rating-num { font-size: 0.75rem; color: var(--text-muted); }
+
+    /* nav tiles */
+    .nav-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .nav-tile {
+      border-radius: 18px; padding: 24px 20px;
+      text-decoration: none; display: block;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer; border: none; text-align: left;
+    }
+    .nav-tile:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,0.1); }
+    .nav-tile.t-blue { background: var(--blue); }
+    .nav-tile.t-gold { background: var(--gold); }
+    .nav-tile.t-dark { background: var(--blue-dark); }
+    .nav-tile.t-white { background: var(--white); border: 2px solid var(--border); }
+    .tile-icon { font-size: 2rem; margin-bottom: 12px; display: block; }
+    .tile-title { font-family: 'Unbounded', sans-serif; font-size: 0.85rem; font-weight: 700; }
+    .tile-sub { font-size: 0.75rem; margin-top: 4px; opacity: 0.75; }
+    .t-blue .tile-title, .t-blue .tile-sub { color: var(--white); }
+    .t-dark .tile-title, .t-dark .tile-sub { color: var(--white); }
+    .t-gold .tile-title { color: var(--blue-dark); }
+    .t-gold .tile-sub { color: var(--blue-dark); }
+    .t-white .tile-title { color: var(--text); }
+    .t-white .tile-sub { color: var(--text-muted); }
+
+    /* activity feed */
+    .activity-item {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .act-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      margin-top: 5px; flex-shrink: 0;
+    }
+    .act-dot.blue { background: var(--blue); }
+    .act-dot.gold { background: var(--gold); }
+    .act-dot.green { background: #38a169; }
+    .act-text { font-size: 0.875rem; line-height: 1.5; }
+    .act-text strong { font-weight: 700; }
+    .act-time { margin-left: auto; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; }
+
+    /* mobile topbar */
+    .mob-menu { display: none; }
+
+    @media (max-width: 1100px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 860px) {
+      .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .mob-menu { display: flex; }
+      .content { padding: 24px 20px; }
+      .topbar { padding: 14px 20px; }
+      .nav-tiles { grid-template-columns: 1fr 1fr; }
+      .wb-right { flex-direction: column; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .grid-3 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <a class="sidebar-logo" href="landing.html">✦ Oyan <span>Bala</span></a>
+
+  <div class="sidebar-profile">
+    <div class="avatar">👩</div>
+    <div class="profile-info">
+      <div class="name">Айгүл Сейткалиева</div>
+      <div class="role">Ата-ана</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="nav-item active" href="home.html">
+      <span class="nav-icon">🏠</span> Басты бет
+    </a>
+    <a class="nav-item" href="map.html">
+      <span class="nav-icon">🗺️</span> Карта
+    </a>
+    <a class="nav-item" href="catalogue.html">
+      <span class="nav-icon">📋</span> Каталог
+      <span class="nav-badge">200+</span>
+    </a>
+    <a class="nav-item" href="profile.html">
+      <span class="nav-icon">👤</span> Жеке кабинет
+    </a>
+    <a class="nav-item" href="landing.html#about">
+      <span class="nav-icon">ℹ️</span> Жоба туралы
+    </a>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <button class="logout-btn" onclick="window.location.href='login.html'">
+      <span>🚪</span> Шығу
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="notif-btn mob-menu" onclick="document.getElementById('sidebar').classList.toggle('open')" style="font-size:1.3rem">☰</button>
+      <div class="topbar-left">
+        <h1>Басты бет</h1>
+        <p id="today-date"></p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <select class="city-select">
+        <option>🏙️ Алматы</option>
+        <option>🏙️ Астана</option>
+        <option>🏙️ Шымкент</option>
+        <option>🏙️ Қарағанды</option>
+      </select>
+      <button class="notif-btn">🔔<div class="notif-dot"></div></button>
+      <div class="avatar" style="cursor:pointer" onclick="window.location.href='profile.html'">👩</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- WELCOME -->
+    <div class="welcome-banner">
+      <div class="wb-left">
+        <h2>Сәлем, <em>Айгүл!</em> 👋</h2>
+        <p>Балаларыңыздың секциялары белсенді. Бүгін жаңа секцияларды қараңыз.</p>
+      </div>
+      <div class="wb-right">
+        <a href="map.html" class="wb-btn wb-btn-primary">🗺️ Картаны ашу</a>
+        <a href="catalogue.html" class="wb-btn wb-btn-secondary">📋 Каталог</a>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon blue">👶</div>
+        <div>
+          <div class="stat-num">2</div>
+          <div class="stat-label">Балалар</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon gold">🏅</div>
+        <div>
+          <div class="stat-num">3</div>
+          <div class="stat-label">Белсенді секция</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">📅</div>
+        <div>
+          <div class="stat-num">2</div>
+          <div class="stat-label">Бүгінгі сабақ</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon red">⭐</div>
+        <div>
+          <div class="stat-num">4.8</div>
+          <div class="stat-label">Орташа рейтинг</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK NAV -->
+    <div class="nav-tiles" style="margin-bottom:24px">
+      <a href="map.html" class="nav-tile t-blue">
+        <span class="tile-icon">🗺️</span>
+        <div class="tile-title">Карта</div>
+        <div class="tile-sub">Маңайдағы секциялар</div>
+      </a>
+      <a href="catalogue.html" class="nav-tile t-gold">
+        <span class="tile-icon">📋</span>
+        <div class="tile-title">Каталог</div>
+        <div class="tile-sub">200+ секция</div>
+      </a>
+      <a href="profile.html" class="nav-tile t-dark">
+        <span class="tile-icon">👤</span>
+        <div class="tile-title">Жеке кабинет</div>
+        <div class="tile-sub">Профиль және балалар</div>
+      </a>
+    </div>
+
+    <!-- KIDS + SECTIONS ROW -->
+    <div class="grid-2">
+
+      <!-- MY KIDS -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Менің балаларым</div>
+          <a href="profile.html" class="card-link">Барлығы →</a>
+        </div>
+        <div class="card-body">
+          <a href="profile.html" class="kid-card">
+            <div class="kid-avatar blue">🧒</div>
+            <div>
+              <div class="kid-name">Арман Сейткали</div>
+              <div class="kid-meta">12 жас · Ұл бала</div>
+            </div>
+            <div class="kid-sections">
+              <span class="kid-section-tag">⚽ Футбол</span>
+              <span class="kid-section-tag">🥊 Бокс</span>
+            </div>
+          </a>
+          <a href="profile.html" class="kid-card">
+            <div class="kid-avatar gold">👧</div>
+            <div>
+              <div class="kid-name">Аяулым Сейткали</div>
+              <div class="kid-meta">9 жас · Қыз бала</div>
+            </div>
+            <div class="kid-sections">
+              <span class="kid-section-tag">🤸 Гимнастика</span>
+            </div>
+          </a>
+          <a href="profile.html" class="wb-btn wb-btn-secondary" style="display:inline-flex;margin-top:8px;font-size:0.85rem;background:var(--offwhite);color:var(--blue);border:2px solid var(--border)">+ Бала қосу</a>
+        </div>
+      </div>
+
+      <!-- RECOMMENDED SECTIONS -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Ұсынылған секциялар</div>
+          <a href="catalogue.html" class="card-link">Барлығы →</a>
+        </div>
+        <div class="card-body" style="padding-top:8px">
+          <a href="section.html" class="section-item">
+            <div class="section-thumb">⚽</div>
+            <div>
+              <div class="section-name">ЦСКА Футбол Академиясы</div>
+              <div class="section-sub">Бостандық ауданы · 1.2 км</div>
+            </div>
+            <div class="section-rating">
+              <div class="rating-stars">★★★★★</div>
+              <div class="rating-num">4.9</div>
+            </div>
+          </a>
+          <a href="section.html" class="section-item">
+            <div class="section-thumb" style="background:linear-gradient(135deg,#c9a00a,#F5C518)">🥊</div>
+            <div>
+              <div class="section-name">Алматы Бокс Клубы</div>
+              <div class="section-sub">Алмалы ауданы · 2.4 км</div>
+            </div>
+            <div class="section-rating">
+              <div class="rating-stars">★★★★★</div>
+              <div class="rating-num">4.8</div>
+            </div>
+          </a>
+          <a href="section.html" class="section-item">
+            <div class="section-thumb" style="background:linear-gradient(135deg,#276749,#38a169)">🤸</div>
+            <div>
+              <div class="section-name">Жас Өркен Гимнастика</div>
+              <div class="section-sub">Медеу ауданы · 3.1 км</div>
+            </div>
+            <div class="section-rating">
+              <div class="rating-stars">★★★★☆</div>
+              <div class="rating-num">4.7</div>
+            </div>
+          </a>
+          <a href="section.html" class="section-item">
+            <div class="section-thumb" style="background:linear-gradient(135deg,#553c9a,#805ad5)">🏊</div>
+            <div>
+              <div class="section-name">Достық Жүзу Бассейні</div>
+              <div class="section-sub">Ауэзов ауданы · 4.0 км</div>
+            </div>
+            <div class="section-rating">
+              <div class="rating-stars">★★★★☆</div>
+              <div class="rating-num">4.6</div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVITY -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Соңғы белсенділік</div>
+        <a href="#" class="card-link">Барлығы →</a>
+      </div>
+      <div class="card-body" style="padding-top:8px">
+        <div class="activity-item">
+          <div class="act-dot blue"></div>
+          <div class="act-text"><strong>Арман</strong> футбол секциясына жазылды — ЦСКА Академиясы</div>
+          <div class="act-time">2 сағат бұрын</div>
+        </div>
+        <div class="activity-item">
+          <div class="act-dot gold"></div>
+          <div class="act-text"><strong>Аяулым</strong> гимнастика сабағы аяқталды — Жас Өркен</div>
+          <div class="act-time">Кеше</div>
+        </div>
+        <div class="activity-item">
+          <div class="act-dot green"></div>
+          <div class="act-text">Бокс секциясынан растау хабарламасы келді</div>
+          <div class="act-time">2 күн бұрын</div>
+        </div>
+        <div class="activity-item">
+          <div class="act-dot blue"></div>
+          <div class="act-text"><strong>Арман</strong> бокс секциясына жазылды — Алматы Бокс Клубы</div>
+          <div class="act-time">3 күн бұрын</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // date
+  const d = new Date();
+  const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+  document.getElementById('today-date').textContent = d.toLocaleDateString('kk-KZ', opts);
+
+  // close sidebar on outside click
+  document.addEventListener('click', e => {
+    const sb = document.getElementById('sidebar');
+    if (sb.classList.contains('open') && !sb.contains(e.target)) {
+      sb.classList.remove('open');
+    }
+  });
+</script>
+</body>
+</html>

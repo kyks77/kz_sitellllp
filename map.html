@@ -1,0 +1,471 @@
+﻿<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Карта — Oyan Bala</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
+  <!-- Leaflet (renders OpenStreetMap tiles, realistic like 2GIS) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <style>
+    :root {
+      --blue: #0055A4; --blue-dark: #003d7a; --blue-light: #1a6fc4;
+      --gold: #F5C518; --white: #FAFBFF; --offwhite: #F0F4FF;
+      --text: #0a1628; --text-muted: #4a6080; --border: #dce6f5;
+      --sidebar-w: 260px; --panel-w: 340px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: 'Nunito', sans-serif; background: var(--offwhite); color: var(--text); display: flex; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w); flex-shrink: 0;
+      background: linear-gradient(175deg, #003d7a 0%, #0055A4 100%);
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; bottom: 0; z-index: 200;
+    }
+    .sidebar-logo { padding: 28px 28px 24px; font-family: 'Unbounded', sans-serif; font-size: 1.15rem; font-weight: 900; color: var(--white); text-decoration: none; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-logo span { color: var(--gold); }
+    .sidebar-profile { padding: 20px 28px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px; }
+    .avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.3); cursor: pointer; }
+    .profile-info .name { font-weight: 700; color: var(--white); font-size: 0.9rem; }
+    .profile-info .role { font-size: 0.75rem; color: rgba(255,255,255,0.55); margin-top: 2px; }
+    .sidebar-nav { flex: 1; padding: 20px 16px; display: flex; flex-direction: column; gap: 4px; }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; text-decoration: none; color: rgba(255,255,255,0.7); font-weight: 600; font-size: 0.9rem; transition: all 0.2s; border: none; background: none; width: 100%; text-align: left; cursor: pointer; }
+    .nav-item:hover { background: rgba(255,255,255,0.1); color: var(--white); }
+    .nav-item.active { background: rgba(245,197,24,0.15); color: var(--gold); }
+    .nav-icon { font-size: 1.2rem; width: 24px; text-align: center; }
+    .nav-badge { margin-left: auto; background: var(--gold); color: var(--blue-dark); font-size: 0.7rem; font-weight: 800; border-radius: 50px; padding: 2px 8px; }
+    .sidebar-bottom { padding: 16px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .logout-btn { display: flex; align-items: center; gap: 10px; padding: 11px 16px; border-radius: 12px; color: rgba(255,255,255,0.5); font-size: 0.875rem; font-weight: 600; cursor: pointer; border: none; background: none; width: 100%; text-align: left; transition: all 0.2s; }
+    .logout-btn:hover { color: #fc8181; background: rgba(252,129,129,0.1); }
+
+    /* ── MAIN ── */
+    .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+    /* topbar */
+    .topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; z-index: 100; flex-shrink: 0; }
+    .topbar-left h1 { font-family: 'Unbounded', sans-serif; font-size: 1.1rem; font-weight: 900; }
+    .topbar-left p { font-size: 0.82rem; color: var(--text-muted); margin-top: 1px; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .notif-btn { width: 38px; height: 38px; border-radius: 10px; background: var(--offwhite); border: none; cursor: pointer; font-size: 1.05rem; display: flex; align-items: center; justify-content: center; position: relative; }
+    .notif-dot { position: absolute; top: 7px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+    .mob-menu { display: none; }
+
+    /* ── MAP AREA ── */
+    .map-area { flex: 1; display: flex; overflow: hidden; position: relative; }
+
+    /* LEFT filter/list panel */
+    .list-panel {
+      width: var(--panel-w); flex-shrink: 0;
+      background: var(--white); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; height: 100%; overflow: hidden;
+      z-index: 10;
+    }
+    .list-panel-head { padding: 16px 20px; border-bottom: 1px solid var(--border); }
+
+    /* search */
+    .map-search { position: relative; margin-bottom: 12px; }
+    .map-search input { width: 100%; padding: 11px 14px 11px 40px; border: 2px solid var(--border); border-radius: 12px; font-family: 'Nunito', sans-serif; font-size: 0.875rem; background: var(--offwhite); color: var(--text); outline: none; transition: border-color 0.2s; }
+    .map-search input:focus { border-color: var(--blue); background: var(--white); }
+    .map-search .si { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 1rem; }
+
+    /* category scroll */
+    .cat-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+    .cat-scroll::-webkit-scrollbar { height: 0; }
+    .cat-chip { flex-shrink: 0; padding: 6px 14px; border-radius: 50px; border: 2px solid var(--border); background: var(--offwhite); font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap; color: var(--text-muted); }
+    .cat-chip:hover { border-color: var(--blue); color: var(--blue); }
+    .cat-chip.active { background: var(--blue); border-color: var(--blue); color: var(--white); }
+
+    /* list */
+    .list-items { flex: 1; overflow-y: auto; padding: 8px 0; }
+    .list-items::-webkit-scrollbar { width: 4px; }
+    .list-items::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .list-item {
+      display: flex; gap: 12px; align-items: center;
+      padding: 14px 20px; cursor: pointer; transition: background 0.15s;
+      border-left: 3px solid transparent;
+    }
+    .list-item:hover { background: var(--offwhite); }
+    .list-item.active { background: rgba(0,85,164,0.06); border-left-color: var(--blue); }
+    .li-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+    .li-body { flex: 1; min-width: 0; }
+    .li-name { font-weight: 700; font-size: 0.875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .li-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+    .li-right { text-align: right; flex-shrink: 0; }
+    .li-dist { font-size: 0.75rem; color: var(--text-muted); }
+    .li-rating { font-size: 0.8rem; font-weight: 700; color: var(--gold); }
+
+    /* list count */
+    .list-count { padding: 8px 20px; font-size: 0.78rem; color: var(--text-muted); font-weight: 600; border-bottom: 1px solid var(--border); }
+
+    /* MAP */
+    #map { flex: 1; z-index: 1; }
+
+    /* POPUP CARD (right slide-in) */
+    .popup-card {
+      position: absolute; right: 0; top: 0; bottom: 0; width: 320px;
+      background: var(--white); border-left: 1px solid var(--border);
+      z-index: 50; transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+      display: flex; flex-direction: column; overflow-y: auto;
+    }
+    .popup-card.open { transform: translateX(0); }
+    .popup-close {
+      position: absolute; top: 14px; right: 14px;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(0,0,0,0.15); border: none; cursor: pointer;
+      font-size: 1rem; display: flex; align-items: center; justify-content: center;
+      color: var(--white); z-index: 2;
+    }
+    .popup-close:hover { background: rgba(0,0,0,0.3); }
+    .popup-hero { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 4rem; position: relative; flex-shrink: 0; }
+    .popup-badge { position: absolute; bottom: 12px; left: 14px; background: rgba(0,0,0,0.4); backdrop-filter: blur(6px); color: var(--white); padding: 4px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; }
+    .popup-body { padding: 20px; flex: 1; }
+    .popup-sport { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--blue); opacity: 0.75; margin-bottom: 4px; }
+    .popup-name { font-family: 'Unbounded', sans-serif; font-size: 1rem; font-weight: 700; line-height: 1.3; margin-bottom: 14px; }
+    .popup-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; font-size: 0.85rem; color: var(--text-muted); }
+    .popup-row strong { color: var(--text); }
+    .popup-divider { height: 1px; background: var(--border); margin: 16px 0; }
+    .popup-schedule { display: flex; flex-direction: column; gap: 6px; }
+    .sched-row { display: flex; justify-content: space-between; font-size: 0.82rem; }
+    .sched-day { font-weight: 700; }
+    .sched-time { color: var(--text-muted); }
+    .popup-footer { padding: 16px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; flex-shrink: 0; }
+    .btn-enroll { flex: 1; padding: 13px; background: var(--blue); color: var(--white); border: none; border-radius: 12px; font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 800; cursor: pointer; transition: background 0.2s; text-decoration: none; text-align: center; }
+    .btn-enroll:hover { background: var(--blue-dark); }
+    .btn-detail { padding: 13px 16px; background: var(--offwhite); color: var(--text); border: 2px solid var(--border); border-radius: 12px; font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s; text-decoration: none; }
+    .btn-detail:hover { border-color: var(--blue); color: var(--blue); }
+
+    /* map controls overlay */
+    .map-controls { position: absolute; top: 16px; left: calc(var(--panel-w) + 16px); z-index: 20; display: flex; gap: 8px; }
+    .map-ctrl-btn { padding: 9px 18px; border-radius: 12px; border: none; background: var(--white); box-shadow: 0 2px 12px rgba(0,0,0,0.12); font-family: 'Nunito', sans-serif; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.2s; color: var(--text-muted); }
+    .map-ctrl-btn:hover { background: var(--offwhite); }
+    .map-ctrl-btn.on { background: var(--blue); color: var(--white); }
+
+    /* custom marker */
+    .custom-pin { width: 38px; height: 38px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 3px 10px rgba(0,0,0,0.25); cursor: pointer; transition: transform 0.15s; }
+    .custom-pin:hover { transform: rotate(-45deg) scale(1.15); }
+    .custom-pin .pin-emoji { transform: rotate(45deg); font-size: 1rem; line-height: 1; display: flex; align-items: center; justify-content: center; }
+    .custom-pin.selected { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(245,197,24,0.4), 0 3px 10px rgba(0,0,0,0.3); }
+
+    @media (max-width: 1024px) { .list-panel { width: 280px; } }
+    @media (max-width: 860px) {
+      .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .mob-menu { display: flex !important; }
+      .list-panel { width: 100%; position: absolute; bottom: 0; left: 0; right: 0; top: auto; height: 50%; border-right: none; border-top: 1px solid var(--border); z-index: 30; }
+      .map-area { flex-direction: column; }
+      #map { height: 50%; }
+      .popup-card { width: 100%; top: auto; height: 70%; }
+      .map-controls { left: 12px; top: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <a class="sidebar-logo" href="landing.html">✦ Oyan <span>Bala</span></a>
+  <div class="sidebar-profile">
+    <div class="avatar" onclick="window.location.href='profile.html'">👩</div>
+    <div class="profile-info">
+      <div class="name">Айгүл Сейткалиева</div>
+      <div class="role">Ата-ана</div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <a class="nav-item" href="home.html"><span class="nav-icon">🏠</span> Басты бет</a>
+    <a class="nav-item active" href="map.html"><span class="nav-icon">🗺️</span> Карта</a>
+    <a class="nav-item" href="catalogue.html"><span class="nav-icon">📋</span> Каталог <span class="nav-badge">200+</span></a>
+    <a class="nav-item" href="profile.html"><span class="nav-icon">👤</span> Жеке кабинет</a>
+    <a class="nav-item" href="landing.html#about"><span class="nav-icon">ℹ️</span> Жоба туралы</a>
+  </nav>
+  <div class="sidebar-bottom">
+    <button class="logout-btn" onclick="window.location.href='login.html'"><span>🚪</span> Шығу</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="notif-btn mob-menu" style="display:none;font-size:1.3rem" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <div class="topbar-left">
+        <h1>Картадан іздеу</h1>
+        <p id="map-subtitle">Алматы қаласы бойынша секциялар</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="notif-btn">🔔<div class="notif-dot"></div></button>
+      <div class="avatar" onclick="window.location.href='profile.html'">👩</div>
+    </div>
+  </div>
+
+  <!-- MAP AREA -->
+  <div class="map-area">
+
+    <!-- LEFT PANEL -->
+    <div class="list-panel">
+      <div class="list-panel-head">
+        <div class="map-search">
+          <span class="si">🔍</span>
+          <input type="text" id="map-search" placeholder="Секция іздеу..." oninput="filterList()" />
+        </div>
+        <div class="cat-scroll" id="cat-scroll"></div>
+      </div>
+      <div class="list-count" id="list-count">0 секция табылды</div>
+      <div class="list-items" id="list-items"></div>
+    </div>
+
+    <!-- MAP -->
+    <div id="map"></div>
+
+    <!-- MAP CONTROLS -->
+    <div class="map-controls">
+      <button class="map-ctrl-btn on" id="ctrl-all" onclick="setCtrl('all')">Барлығы</button>
+      <button class="map-ctrl-btn" id="ctrl-free" onclick="setCtrl('free')">✓ Тегін</button>
+      <button class="map-ctrl-btn" id="ctrl-near" onclick="setCtrl('near')">📍 Жақын</button>
+    </div>
+
+    <!-- POPUP CARD -->
+    <div class="popup-card" id="popup-card">
+      <button class="popup-close" onclick="closePopup()">✕</button>
+      <div class="popup-hero" id="popup-hero"></div>
+      <div class="popup-body">
+        <div class="popup-sport" id="popup-sport"></div>
+        <div class="popup-name" id="popup-name"></div>
+        <div class="popup-row">📍 <span id="popup-addr"></span></div>
+        <div class="popup-row">🚶 <span id="popup-dist"></span> &nbsp;|&nbsp; ⭐ <span id="popup-rating"></span></div>
+        <div class="popup-row">👦 Жас: <strong id="popup-age"></strong></div>
+        <div class="popup-row">💳 <strong id="popup-price"></strong></div>
+        <div class="popup-divider"></div>
+        <div style="font-weight:700;font-size:0.85rem;margin-bottom:10px">📅 Сабақ кестесі</div>
+        <div class="popup-schedule" id="popup-schedule"></div>
+      </div>
+      <div class="popup-footer">
+        <a href="section.html" class="btn-enroll">Жазылу →</a>
+        <a href="section.html" class="btn-detail">Толығырақ</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── DATA ──
+const SPORTS = [
+  { emoji:'⚽', name:'Футбол',      color:'#0055A4', bg:'#003d7a,#1a6fc4' },
+  { emoji:'🥊', name:'Бокс',       color:'#c9a00a', bg:'#7a5c00,#F5C518' },
+  { emoji:'🤸', name:'Гимнастика', color:'#276749', bg:'#1a4731,#38a169' },
+  { emoji:'🏊', name:'Жүзу',       color:'#553c9a', bg:'#3c2a7a,#805ad5' },
+  { emoji:'🏹', name:'Садақ ату',  color:'#c05621', bg:'#7a3100,#ed8936' },
+  { emoji:'🤼', name:'Күрес',      color:'#822727', bg:'#5c1a1a,#e53e3e' },
+  { emoji:'🏀', name:'Баскетбол',  color:'#7b341e', bg:'#5c2200,#dd6b20' },
+  { emoji:'🥋', name:'Дзюдо',      color:'#1a365d', bg:'#0a1f3d,#2b6cb0' },
+];
+
+const ALMATY_CENTER = [43.238, 76.945];
+const DISTRICTS = [
+  { name:'Бостандық', lat:43.252, lng:76.892 },
+  { name:'Алмалы',    lat:43.260, lng:76.945 },
+  { name:'Медеу',     lat:43.228, lng:76.968 },
+  { name:'Ауэзов',    lat:43.210, lng:76.880 },
+  { name:'Жетісу',    lat:43.270, lng:77.010 },
+  { name:'Түрксіб',   lat:43.290, lng:77.050 },
+];
+const NAMES = ['Жас Өркен','ЦСКА','Алматы','Достық','Барыс','Нұр','Спартак','Болашақ'];
+const SUFFIXES = ['Академиясы','Клубы','Орталығы','Спорт Мектебі'];
+const SCHEDULES = [
+  [{d:'Дүйсенбі / Сәрсенбі',t:'16:00 – 18:00'},{d:'Жұма',t:'15:00 – 17:00'}],
+  [{d:'Сейсенбі / Бейсенбі',t:'17:00 – 19:00'},{d:'Сенбі',t:'10:00 – 12:00'}],
+  [{d:'Дс / Ср / Жм',t:'15:30 – 17:30'}],
+  [{d:'Сенбі / Жексенбі',t:'09:00 – 11:00'},{d:'Сәрсенбі',t:'17:00 – 19:00'}],
+];
+
+function rnd(min,max){ return min + Math.random()*(max-min); }
+
+const sections = [];
+let id = 1;
+SPORTS.forEach(sport => {
+  const count = 6 + Math.floor(Math.random()*5);
+  for(let i=0;i<count;i++){
+    const d = DISTRICTS[Math.floor(Math.random()*DISTRICTS.length)];
+    const lat = d.lat + rnd(-0.025,0.025);
+    const lng = d.lng + rnd(-0.025,0.025);
+    const dist = rnd(0.4,6).toFixed(1);
+    const rating = (4.1+Math.random()*0.9).toFixed(1);
+    const free = Math.random()>0.55;
+    const minAge = [5,6,7,8,9][Math.floor(Math.random()*5)];
+    const maxAge = minAge + [4,5,6,7][Math.floor(Math.random()*4)];
+    const name = `${NAMES[Math.floor(Math.random()*NAMES.length)]} ${sport.name} ${SUFFIXES[Math.floor(Math.random()*SUFFIXES.length)]}`;
+    sections.push({
+      id: id++, lat, lng, sport: sport.name, emoji: sport.emoji,
+      color: sport.color, bg: sport.bg,
+      name, district: d.name, dist: parseFloat(dist),
+      rating: parseFloat(rating), free, minAge, maxAge,
+      address: `${d.name} ауданы, ${Math.floor(rnd(1,150))} үй`,
+      schedule: SCHEDULES[Math.floor(Math.random()*SCHEDULES.length)],
+    });
+  }
+});
+
+// ── STATE ──
+let activeCtrl = 'all';
+let activeCat = null;
+let activeId = null;
+let markers = {};
+
+// ── MAP INIT ──
+const map = L.map('map', { center: ALMATY_CENTER, zoom: 13, zoomControl: false });
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors',
+  maxZoom: 19,
+}).addTo(map);
+L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+// close popup on map click
+map.on('click', () => closePopup());
+
+// ── CATEGORY CHIPS ──
+const catScroll = document.getElementById('cat-scroll');
+const allChip = document.createElement('div');
+allChip.className = 'cat-chip active'; allChip.textContent = '🏅 Барлығы';
+allChip.onclick = () => { activeCat = null; updateChips(); render(); };
+catScroll.appendChild(allChip);
+
+SPORTS.forEach(s => {
+  const chip = document.createElement('div');
+  chip.className = 'cat-chip'; chip.textContent = `${s.emoji} ${s.name}`;
+  chip.onclick = () => { activeCat = activeCat === s.name ? null : s.name; updateChips(); render(); };
+  chip.dataset.sport = s.name;
+  catScroll.appendChild(chip);
+});
+
+function updateChips() {
+  catScroll.querySelectorAll('.cat-chip').forEach((c,i) => {
+    if(i===0) c.classList.toggle('active', !activeCat);
+    else c.classList.toggle('active', c.dataset.sport === activeCat);
+  });
+}
+
+// ── CONTROLS ──
+function setCtrl(c) {
+  activeCtrl = c;
+  ['all','free','near'].forEach(x => document.getElementById('ctrl-'+x).classList.toggle('on', x===c));
+  render();
+}
+
+// ── FILTER ──
+function getVisible() {
+  const q = document.getElementById('map-search').value.toLowerCase();
+  let res = sections.filter(s => {
+    if(activeCat && s.sport !== activeCat) return false;
+    if(activeCtrl === 'free' && !s.free) return false;
+    if(activeCtrl === 'near' && s.dist > 2.5) return false;
+    if(q && !s.name.toLowerCase().includes(q) && !s.sport.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  return res;
+}
+
+// ── RENDER ──
+function render() {
+  const visible = getVisible();
+  renderMarkers(visible);
+  renderList(visible);
+}
+
+function renderMarkers(visible) {
+  // remove old
+  Object.values(markers).forEach(m => map.removeLayer(m));
+  markers = {};
+
+  visible.forEach(s => {
+    const isActive = s.id === activeId;
+    const icon = L.divIcon({
+      className: '',
+      html: `<div class="custom-pin ${isActive?'selected':''}" style="background:${s.color}"><div class="pin-emoji">${s.emoji}</div></div>`,
+      iconSize: [38,38], iconAnchor: [14,38], popupAnchor: [5,-38],
+    });
+    const marker = L.marker([s.lat, s.lng], { icon }).addTo(map);
+    marker.on('click', e => { e.originalEvent.stopPropagation(); openPopup(s); });
+    markers[s.id] = marker;
+  });
+}
+
+function renderList(visible) {
+  const container = document.getElementById('list-items');
+  document.getElementById('list-count').textContent = `${visible.length} секция табылды`;
+
+  container.innerHTML = visible.sort((a,b)=>b.rating-a.rating).map(s => `
+    <div class="list-item ${s.id===activeId?'active':''}" onclick="openPopup(${JSON.stringify(s).replace(/"/g,'&quot;')})">
+      <div class="li-icon" style="background:linear-gradient(135deg,#${s.bg.split(',')[0].replace('#','')},#${s.bg.split(',')[1].replace('#','')})">${s.emoji}</div>
+      <div class="li-body">
+        <div class="li-name">${s.name}</div>
+        <div class="li-sub">${s.district} · ${s.free?'Тегін':'Ақылы'}</div>
+      </div>
+      <div class="li-right">
+        <div class="li-rating">⭐ ${s.rating}</div>
+        <div class="li-dist">${s.dist} км</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterList() { render(); }
+
+// ── POPUP ──
+function openPopup(s) {
+  if(typeof s === 'string') s = JSON.parse(s);
+  activeId = s.id;
+  render();
+
+  // fly to
+  map.flyTo([s.lat, s.lng], 15, { duration: 0.8 });
+
+  // fill popup
+  const sport = SPORTS.find(x => x.name === s.sport);
+  document.getElementById('popup-hero').style.background = `linear-gradient(135deg, #${s.bg.split(',')[0].replace('#','')}, #${s.bg.split(',')[1].replace('#','')})`;
+  document.getElementById('popup-hero').innerHTML = `<span style="font-size:4rem">${s.emoji}</span><span class="popup-badge">⭐ ${s.rating} · ${s.district}</span>`;
+  document.getElementById('popup-sport').textContent = s.sport.toUpperCase();
+  document.getElementById('popup-name').textContent = s.name;
+  document.getElementById('popup-addr').textContent = s.address;
+  document.getElementById('popup-dist').textContent = s.dist + ' км жерде';
+  document.getElementById('popup-rating').textContent = s.rating + ' / 5.0';
+  document.getElementById('popup-age').textContent = `${s.minAge}–${s.maxAge} жас`;
+  document.getElementById('popup-price').textContent = s.free ? '✓ Тегін секция' : 'Ақылы — тренерден сұраңыз';
+  document.getElementById('popup-schedule').innerHTML = s.schedule.map(r =>
+    `<div class="sched-row"><span class="sched-day">${r.d}</span><span class="sched-time">${r.t}</span></div>`
+  ).join('');
+
+  document.getElementById('popup-card').classList.add('open');
+  document.getElementById('map-subtitle').textContent = s.name;
+}
+
+function closePopup() {
+  activeId = null;
+  document.getElementById('popup-card').classList.remove('open');
+  document.getElementById('map-subtitle').textContent = 'Алматы қаласы бойынша секциялар';
+  render();
+}
+
+// sidebar close
+document.addEventListener('click', e => {
+  const sb = document.getElementById('sidebar');
+  if(sb.classList.contains('open') && !sb.contains(e.target)) sb.classList.remove('open');
+});
+
+// ── INIT ──
+render();
+</script>
+</body>
+</html>

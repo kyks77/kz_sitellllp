@@ -1,0 +1,494 @@
+﻿<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Кіру / Тіркелу — Oyan Bala</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --blue: #0055A4;
+      --blue-dark: #003d7a;
+      --blue-light: #1a6fc4;
+      --gold: #F5C518;
+      --white: #FAFBFF;
+      --offwhite: #F0F4FF;
+      --text: #0a1628;
+      --text-muted: #4a6080;
+      --border: #dce6f5;
+      --error: #e53e3e;
+      --success: #38a169;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--offwhite);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── LEFT PANEL ── */
+    .left-panel {
+      width: 480px; flex-shrink: 0;
+      background: linear-gradient(155deg, #003d7a 0%, #0055A4 50%, #1a6fc4 100%);
+      position: relative; overflow: hidden;
+      display: flex; flex-direction: column;
+      justify-content: space-between;
+      padding: 48px 52px;
+    }
+    .left-panel::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: radial-gradient(ellipse at 20% 80%, rgba(245,197,24,0.15) 0%, transparent 55%),
+                        radial-gradient(ellipse at 80% 10%, rgba(245,197,24,0.08) 0%, transparent 45%);
+    }
+    .ornament {
+      position: absolute; bottom: -80px; right: -80px;
+      width: 360px; height: 360px;
+      border: 60px solid rgba(245,197,24,0.08);
+      border-radius: 50%;
+    }
+    .ornament2 {
+      position: absolute; top: 60px; left: -60px;
+      width: 200px; height: 200px;
+      border: 40px solid rgba(255,255,255,0.05);
+      border-radius: 50%;
+    }
+    .left-logo {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 1.4rem; font-weight: 900;
+      color: var(--white); position: relative; z-index: 2;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 10px;
+    }
+    .left-logo span { color: var(--gold); }
+    .left-content { position: relative; z-index: 2; }
+    .left-content h2 {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 2rem; font-weight: 900;
+      color: var(--white); line-height: 1.2;
+      margin-bottom: 20px;
+    }
+    .left-content h2 em { color: var(--gold); font-style: normal; }
+    .left-content p { color: rgba(255,255,255,0.75); line-height: 1.7; font-size: 1rem; }
+    .left-stats {
+      display: flex; gap: 32px; position: relative; z-index: 2;
+    }
+    .lst { }
+    .lst-num {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 1.6rem; font-weight: 900; color: var(--gold);
+    }
+    .lst-label { font-size: 0.8rem; color: rgba(255,255,255,0.65); margin-top: 2px; }
+
+    .testimonial {
+      position: relative; z-index: 2;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 16px; padding: 20px 24px;
+    }
+    .testimonial p { color: rgba(255,255,255,0.9); font-size: 0.9rem; line-height: 1.6; margin-bottom: 12px; }
+    .test-author { display: flex; align-items: center; gap: 10px; }
+    .test-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--gold); display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+    .test-name { font-weight: 700; color: var(--white); font-size: 0.85rem; }
+    .test-city { font-size: 0.75rem; color: rgba(255,255,255,0.55); }
+
+    /* ── RIGHT PANEL ── */
+    .right-panel {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center;
+      padding: 40px;
+    }
+    .auth-box {
+      background: var(--white);
+      border-radius: 28px;
+      padding: 48px 52px;
+      width: 100%; max-width: 480px;
+      box-shadow: 0 20px 60px rgba(0,85,164,0.1);
+    }
+
+    /* tabs */
+    .tabs {
+      display: flex; background: var(--offwhite);
+      border-radius: 14px; padding: 4px;
+      margin-bottom: 36px;
+    }
+    .tab-btn {
+      flex: 1; padding: 11px; border: none; cursor: pointer;
+      background: transparent; border-radius: 10px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.95rem; font-weight: 700;
+      color: var(--text-muted); transition: all 0.25s;
+    }
+    .tab-btn.active {
+      background: var(--white); color: var(--blue);
+      box-shadow: 0 2px 12px rgba(0,85,164,0.12);
+    }
+
+    /* form panel */
+    .form-panel { display: none; }
+    .form-panel.active { display: block; }
+
+    .form-title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 1.5rem; font-weight: 900;
+      color: var(--text); margin-bottom: 6px;
+    }
+    .form-sub { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 28px; }
+
+    .form-group { margin-bottom: 18px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    label {
+      display: block; font-weight: 700; font-size: 0.85rem;
+      color: var(--text); margin-bottom: 6px;
+    }
+    .input-wrap { position: relative; }
+    .input-icon {
+      position: absolute; left: 14px; top: 50%;
+      transform: translateY(-50%); font-size: 1rem;
+      pointer-events: none;
+    }
+    input[type=text], input[type=email], input[type=password], input[type=tel], select {
+      width: 100%; padding: 13px 14px 13px 40px;
+      border: 2px solid var(--border); border-radius: 12px;
+      font-family: 'Nunito', sans-serif; font-size: 0.95rem;
+      color: var(--text); background: var(--offwhite);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none; appearance: none;
+    }
+    input:focus, select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(0,85,164,0.1);
+      background: var(--white);
+    }
+    .no-icon input, .no-icon select { padding-left: 14px; }
+
+    .password-toggle {
+      position: absolute; right: 14px; top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer; font-size: 1rem;
+      background: none; border: none; color: var(--text-muted);
+    }
+
+    .form-divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 22px 0; color: var(--text-muted); font-size: 0.85rem;
+    }
+    .form-divider::before, .form-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* section for kid info in register */
+    .kid-section {
+      background: var(--offwhite); border-radius: 16px;
+      padding: 20px; margin-bottom: 18px;
+    }
+    .kid-section-title {
+      font-weight: 700; font-size: 0.85rem; color: var(--blue);
+      margin-bottom: 14px; display: flex; align-items: center; gap: 6px;
+    }
+
+    .btn-main {
+      width: 100%; padding: 15px;
+      background: var(--blue); color: var(--white);
+      border: none; border-radius: 14px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1rem; font-weight: 800;
+      cursor: pointer; transition: all 0.2s;
+      margin-top: 4px;
+    }
+    .btn-main:hover { background: var(--blue-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,85,164,0.25); }
+    .btn-main:active { transform: translateY(0); }
+
+    .forgot-link {
+      text-align: right; margin-top: -10px; margin-bottom: 14px;
+    }
+    .forgot-link a { font-size: 0.85rem; color: var(--blue); text-decoration: none; font-weight: 600; }
+    .forgot-link a:hover { text-decoration: underline; }
+
+    .social-btn {
+      width: 100%; padding: 13px;
+      background: var(--white); color: var(--text);
+      border: 2px solid var(--border); border-radius: 12px;
+      font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .social-btn:hover { border-color: var(--blue); background: var(--offwhite); }
+
+    .terms {
+      font-size: 0.8rem; color: var(--text-muted);
+      text-align: center; margin-top: 16px; line-height: 1.5;
+    }
+    .terms a { color: var(--blue); text-decoration: none; }
+
+    /* success state */
+    .success-screen {
+      display: none; text-align: center; padding: 20px 0;
+    }
+    .success-icon {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: #f0fff4; border: 3px solid var(--success);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem; margin: 0 auto 20px;
+    }
+    .success-screen h3 {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 1.3rem; font-weight: 900;
+      margin-bottom: 10px;
+    }
+    .success-screen p { color: var(--text-muted); margin-bottom: 28px; }
+
+    @media (max-width: 900px) {
+      .left-panel { display: none; }
+    }
+    @media (max-width: 500px) {
+      .auth-box { padding: 32px 24px; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LEFT -->
+<div class="left-panel">
+  <div class="ornament"></div>
+  <div class="ornament2"></div>
+  <a class="left-logo" href="landing.html">✦ Oyan <span>Bala</span></a>
+  <div class="left-content">
+    <h2>Балаңыздың <em>болашағы</em> бүгін басталады</h2>
+    <p>Қазақстанның ең үлкен балалар спорт секциялары платформасына қош келдіңіз. Тіркеліп, алғашқы қадамды жасаңыз.</p>
+  </div>
+  <div class="left-stats">
+    <div class="lst">
+      <div class="lst-num">200+</div>
+      <div class="lst-label">Секция</div>
+    </div>
+    <div class="lst">
+      <div class="lst-num">18</div>
+      <div class="lst-label">Спорт түрі</div>
+    </div>
+    <div class="lst">
+      <div class="lst-num">Тегін</div>
+      <div class="lst-label">Тіркелу</div>
+    </div>
+  </div>
+  <div class="testimonial">
+    <p>«Oyan Bala арқылы ұлымды футбол секциясына 5 минутта жаздым. Өте ыңғайлы!»</p>
+    <div class="test-author">
+      <div class="test-avatar">👩</div>
+      <div>
+        <div class="test-name">Айгүл Сейткалиева</div>
+        <div class="test-city">Алматы қаласы</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT -->
+<div class="right-panel">
+  <div class="auth-box">
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('login')">Кіру</button>
+      <button class="tab-btn" onclick="switchTab('register')">Тіркелу</button>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="success-screen" id="success-screen">
+      <div class="success-icon">✅</div>
+      <h3>Сәтті тіркелдіңіз!</h3>
+      <p>Тіркелгіңіз жасалды. Енді секцияларды қарай аласыз.</p>
+      <button class="btn-main" onclick="window.location.href='home.html'">Бастапқы бетке өту →</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div class="form-panel active" id="login-panel">
+      <div class="form-title">Қош келдіңіз!</div>
+      <div class="form-sub">Есептік жазбаңызға кіріңіз</div>
+
+      <div class="form-group">
+        <label>Электрондық пошта</label>
+        <div class="input-wrap">
+          <span class="input-icon">📧</span>
+          <input type="email" placeholder="email@example.com" id="login-email" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Құпия сөз</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input type="password" placeholder="••••••••" id="login-pass" />
+          <button class="password-toggle" onclick="togglePass('login-pass', this)">👁️</button>
+        </div>
+      </div>
+
+      <div class="forgot-link"><a href="#">Құпия сөзді ұмыттыңыз ба?</a></div>
+
+      <button class="btn-main" onclick="handleLogin()">Кіру →</button>
+
+      <div class="form-divider">немесе</div>
+
+      <button class="social-btn" onclick="window.location.href='home.html'">
+        <span>🇰🇿</span> ЭЦҚ арқылы кіру (eGov)
+      </button>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div class="form-panel" id="register-panel">
+      <div class="form-title">Тіркелу</div>
+      <div class="form-sub">Тегін есептік жазба жасаңыз</div>
+
+      <!-- Parent info -->
+      <div class="kid-section">
+        <div class="kid-section-title">👤 Ата-ана мәліметтері</div>
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Аты</label>
+            <div class="input-wrap no-icon">
+              <input type="text" placeholder="Айгүл" />
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Тегі</label>
+            <div class="input-wrap no-icon">
+              <input type="text" placeholder="Сейткалиева" />
+            </div>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:14px; margin-bottom:0">
+          <label>Телефон</label>
+          <div class="input-wrap">
+            <span class="input-icon">📱</span>
+            <input type="tel" placeholder="+7 (700) 000-00-00" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Электрондық пошта</label>
+        <div class="input-wrap">
+          <span class="input-icon">📧</span>
+          <input type="email" placeholder="email@example.com" id="reg-email" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Құпия сөз</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input type="password" placeholder="Кемінде 8 таңба" id="reg-pass" />
+          <button class="password-toggle" onclick="togglePass('reg-pass', this)">👁️</button>
+        </div>
+      </div>
+
+      <!-- Kid info -->
+      <div class="kid-section">
+        <div class="kid-section-title">👶 Бала мәліметтері</div>
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Баланың аты</label>
+            <div class="input-wrap no-icon">
+              <input type="text" placeholder="Арман" />
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Туған жылы</label>
+            <div class="input-wrap no-icon">
+              <select>
+                <option value="">Жыл</option>
+                <script>
+                  for(let y=2018;y>=2007;y--) document.write(`<option>${y}</option>`);
+                </script>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:14px; margin-bottom:0">
+          <label>Жынысы</label>
+          <div class="input-wrap no-icon">
+            <select>
+              <option value="">Таңдаңыз</option>
+              <option>Ұл бала</option>
+              <option>Қыз бала</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-main" onclick="handleRegister()">Тіркелу →</button>
+      <div class="terms">
+        Тіркелу арқылы сіз біздің <a href="#">Пайдалану шарттарымен</a> және
+        <a href="#">Конфиденциалдылық саясатымызбен</a> келісесіз.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach((b,i) => {
+      b.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
+    });
+    document.getElementById('login-panel').classList.toggle('active', tab === 'login');
+    document.getElementById('register-panel').classList.toggle('active', tab === 'register');
+    document.getElementById('success-screen').style.display = 'none';
+  }
+
+  function togglePass(id, btn) {
+    const inp = document.getElementById(id);
+    if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+    else { inp.type = 'password'; btn.textContent = '👁️'; }
+  }
+
+  function handleLogin() {
+    const email = document.getElementById('login-email').value;
+    const pass = document.getElementById('login-pass').value;
+    if (!email || !pass) { shake(); return; }
+    window.location.href = 'home.html';
+  }
+
+  function handleRegister() {
+    const email = document.getElementById('reg-email').value;
+    const pass = document.getElementById('reg-pass').value;
+    if (!email || !pass) { shake(); return; }
+    document.getElementById('register-panel').style.display = 'none';
+    document.getElementById('success-screen').style.display = 'block';
+    document.querySelectorAll('.tab-btn').forEach(b => b.style.display = 'none');
+    document.querySelector('.tabs').style.display = 'none';
+  }
+
+  function shake() {
+    const box = document.querySelector('.auth-box');
+    box.style.animation = 'shake 0.4s ease';
+    setTimeout(() => box.style.animation = '', 400);
+  }
+
+  // allow Enter key
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      if (document.getElementById('login-panel').classList.contains('active')) handleLogin();
+      else handleRegister();
+    }
+  });
+</script>
+<style>
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(5px); }
+  }
+</style>
+</body>
+</html>
